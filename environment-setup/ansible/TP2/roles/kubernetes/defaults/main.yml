@@ -1,0 +1,11 @@
+---
+rke_admin_user: "rke_admin"
+kubernetes_version: "v1.30"
+kubernetes_packages:
+  - apt-transport-https
+  - kubectl
+  - ca-certificates
+  - curl
+  - gnupg
+
+pv_basename: project2-pv2

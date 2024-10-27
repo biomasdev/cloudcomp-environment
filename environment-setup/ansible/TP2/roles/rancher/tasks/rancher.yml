@@ -1,0 +1,56 @@
+- name: Create rke_admin Group
+  group:
+    name: rke_admin
+    state: present
+
+- name: Create RKE Admin non-system user
+  user:
+    name: "{{ rke_admin_user }}"
+    groups: docker,rke_admin
+    generate_ssh_key: yes
+
+    ssh_key_file: "{{ rke_ssh_key_path }}{{ rke_ssh_key }}"
+  register: rke_user_data
+
+- name: Set authorized key taken from file
+  ansible.posix.authorized_key:
+    user: "{{ rke_admin_user }}"
+    state: present
+    key: "{{ rke_user_data.ssh_public_key }}"
+
+- name: Downloading RKE
+  get_url:
+    timeout: 40
+    url: "{{ rke_parent_url }}{{ rke_version }}/{{ rke_type }}"
+    dest: "/opt/{{ rke_version }}_{{ rke_type }}"
+    owner: "{{ rke_admin_user }}"
+    group: rke_admin
+    mode: 0744
+
+- name: Generating SYMLINK for RKE
+  become: True
+  file:
+    src: "/opt/{{ rke_version }}_{{ rke_type }}"
+    dest: "/bin/rke"
+    state: link
+  tags:
+    - rancher
+
+- name: Generate cluster yml file
+  become: yes
+  become_user: "{{ rke_admin_user}}"
+  template:
+    src: cluster_config.yml.j2
+    dest: ~/cluster.yaml
+    owner: "{{ rke_admin_user }}"
+    group: rke_admin
+    mode: 0644
+
+- name: Create rke systemd script
+  template:
+    src: "rke.service.j2"
+    dest: "/etc/systemd/system/rke.service"
+    owner: root
+    group: root
+    mode: 0644
+  when: systemd_check.stat.exists == True

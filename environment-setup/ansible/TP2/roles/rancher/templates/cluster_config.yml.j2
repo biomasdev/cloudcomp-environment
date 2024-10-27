@@ -1,0 +1,120 @@
+# If you intended to deploy Kubernetes in an air-gapped environment,
+# please consult the documentation on how to configure custom RKE images.
+nodes:
+- address: {{ current_machine_ipaddress }}
+  port: "22"
+  internal_address: ""
+  role:
+  - controlplane
+  - worker
+  - etcd
+  hostname_override: ""
+  user: {{ rke_admin_user }}
+  docker_socket: /run/docker.sock
+  ssh_key: ""
+  ssh_key_path: {{ rke_ssh_key_path }}{{ rke_ssh_key }}
+  ssh_cert: ""
+  ssh_cert_path: ""
+  labels: {}
+  taints: []
+extra_args:
+  max-pods: 250
+network:
+  plugin: flannel
+  options: {}
+  mtu: 0
+  node_selector: {}
+  update_strategy: null
+  tolerations: []
+authentication:
+  strategy: x509
+  sans: []
+  webhook: null
+addons: ""
+addons_include: []
+system_images:
+  etcd: rancher/mirrored-coreos-etcd:v3.5.12
+  alpine: rancher/rke-tools:v0.1.103
+  nginx_proxy: rancher/rke-tools:v0.1.103
+  cert_downloader: rancher/rke-tools:v0.1.103
+  kubernetes_services_sidecar: rancher/rke-tools:v0.1.103
+  kubedns: rancher/mirrored-k8s-dns-kube-dns:1.23.0
+  dnsmasq: rancher/mirrored-k8s-dns-dnsmasq-nanny:1.23.0
+  kubedns_sidecar: rancher/mirrored-k8s-dns-sidecar:1.23.0
+  kubedns_autoscaler: rancher/mirrored-cluster-proportional-autoscaler:v1.8.9
+  coredns: rancher/mirrored-coredns-coredns:1.11.1
+  coredns_autoscaler: rancher/mirrored-cluster-proportional-autoscaler:v1.8.9
+  nodelocal: rancher/mirrored-k8s-dns-node-cache:1.23.0
+  kubernetes: rancher/hyperkube:{{ kubernetes_rancher_version }}
+  flannel: rancher/mirrored-flannel-flannel:v0.25.1
+  flannel_cni: rancher/flannel-cni:v1.4.1-rancher1
+  calico_node: rancher/mirrored-calico-node:v3.28.1
+  calico_cni: rancher/calico-cni:v3.28.1-rancher1
+  calico_controllers: rancher/mirrored-calico-kube-controllers:v3.28.1
+  calico_ctl: rancher/mirrored-calico-ctl:v3.28.1
+  calico_flexvol: rancher/mirrored-calico-pod2daemon-flexvol:v3.28.1
+  canal_node: rancher/mirrored-calico-node:v3.28.1
+  canal_cni: rancher/calico-cni:v3.28.1-rancher1
+  canal_controllers: rancher/mirrored-calico-kube-controllers:v3.28.1
+  canal_flannel: rancher/mirrored-flannel-flannel:v0.25.1
+  canal_flexvol: rancher/mirrored-calico-pod2daemon-flexvol:v3.28.1
+  weave_node: ""
+  weave_cni: ""
+  pod_infra_container: rancher/mirrored-pause:3.7
+  ingress: rancher/nginx-ingress-controller:nginx-1.11.2-rancher1
+  ingress_backend: rancher/mirrored-nginx-ingress-controller-defaultbackend:1.5-rancher1
+  ingress_webhook: rancher/mirrored-ingress-nginx-kube-webhook-certgen:v1.4.1
+  metrics_server: rancher/mirrored-metrics-server:v0.7.1
+  windows_pod_infra_container: rancher/mirrored-pause:3.7
+  aci_cni_deploy_container: noiro/cnideploy:6.1.1.1.81c2369
+  aci_host_container: noiro/aci-containers-host:6.1.1.1.81c2369
+  aci_opflex_container: noiro/opflex:6.1.1.1.81c2369
+  aci_mcast_container: noiro/opflex:6.1.1.1.81c2369
+  aci_ovs_container: noiro/openvswitch:6.1.1.1.81c2369
+  aci_controller_container: noiro/aci-containers-controller:6.1.1.1.81c2369
+  aci_gbp_server_container: ""
+  aci_opflex_server_container: ""
+ssh_key_path: ~/.ssh/rke_admin_key
+ssh_cert_path: ""
+ssh_agent_auth: false
+authorization:
+  mode: rbac
+  options: {}
+ignore_docker_version: null
+enable_cri_dockerd: null
+kubernetes_version: "{{ kubernetes_rancher_version }}"
+private_registries: []
+
+rotate_encryption_key: false
+dns: null
+cri_dockerd_stream_server_address: ""
+cri_dockerd_stream_server_port: ""
+
+kubelet:
+  # Base domain for the cluster
+  cluster_domain: cluster.local
+  # IP address for the DNS service endpoint
+  cluster_dns_server: 10.43.0.10
+  # Fail if swap is on
+  fail_swap_on: false
+  # Configure pod-infra-container-image argument
+  pod-infra-container-image: "k8s.gcr.io/pause:3.2"
+  # Generate a certificate signed by the kube-ca Certificate Authority
+  # for the kubelet to use as a server certificate
+  # Available as of v1.0.0
+  generate_serving_certificate: true
+  extra_args:
+    # Set max pods to 250 instead of default 110
+    max-pods: 250
+    # Enable RotateKubeletServerCertificate feature gate
+    feature-gates: RotateKubeletServerCertificate=true
+  # Optionally define additional volume binds to a service
+  extra_binds:
+    - "/usr/libexec/kubernetes/kubelet-plugins:/usr/libexec/kubernetes/kubelet-plugins"
+scheduler:
+  extra_args:
+    # Set the level of log output to debug-level
+    v: 4
+kubeproxy:
+  extra_args:
+    # Set the leve

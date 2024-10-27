@@ -1,0 +1,9 @@
+[Service]
+Type=forking
+User={{ rke_admin_user }}
+WorkingDirectory=/home/{{ rke_admin_user }}
+ExecStart=rke up --config /home/{{ rke_admin_user }}/cluster.yaml
+ExecStop=rke remove
+Restart=on-failure
+RestartSec=5s
+TimeoutSec=12000

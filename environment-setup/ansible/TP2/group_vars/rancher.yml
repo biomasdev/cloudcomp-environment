@@ -1,0 +1,29 @@
+rke_admin_user: "rke_admin"
+rke_ssh_key: "rke_admin_key"
+rke_ssh_key_path: "/home/rke_admin/.ssh/"
+rancher_server_name: "rke.rancher-local"
+rancher_parent_folder: "/opt"
+rke_parent_url: "https://github.com/rancher/rke/releases/download/"
+rke_version: "v1.6.3"
+rke_type: "rke_linux-amd64"
+current_machine_ipaddress: "{{ hostvars['cloud'].ansible_default_ipv4.address
+  | default(hostvars['cloud'].ansible_all_ipv4_addresses[0]) }}"
+
+RKE_SSH_PORT: 22
+RKE_DASHBOARD_PORT: 80
+RKE_DASHBOARD_PORT_SECURE: 443
+KUBERNETES_EXPOSED_PORT: 6443
+RANCHER_EXPOSED_PORT_HTTPS: 31444
+RANCHER_EXPOSED_PORT_HTTP: 31081
+ARGOCD_EXPOSED_PORT_HTTPS: 31443
+ARGOCD_EXPOSED_PORT_HTTP: 31080
+CERT_MANAGER_VERSION: "v1.7.1"
+
+kubernetes_rancher_version: "v1.30.5-rancher1"
+
+rancher_vars:
+  KUBECONFIG: "~/kube_config_cluster.yaml"
+
+cluster_name: "local"
+
+random_password: "{{ lookup('ansible.builtin.password', '/dev/null', chars=['ascii_letters', 'digits'], length=15, seed=inventory_hostname) }}"

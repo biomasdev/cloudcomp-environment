@@ -1,0 +1,54 @@
+- name: Check for existing kubernetes installation
+  stat:
+    path: "/bin/kubectl"
+  register: kubernetes_install
+  tags:
+    - kubernetes
+
+- name: Download, install and setup kubernetes environment
+  block:
+    - name: Start kubernetes installation
+      include_tasks: kubernetes.yml
+      when: not kubernetes_install.stat.exists
+      tags:
+        - kubernetes
+        - installation
+
+  become: True
+  tags:
+    - kubernetes
+    - installation
+    - setup
+
+- name: Install kubectl
+  become: true
+  apt:
+    name: "{{ kubernetes_packages }}"
+    state: present
+    cache_valid_time: 600
+
+- name: Configure Kubernetes
+  block:
+    - name: Start kubernetes installation
+      include_tasks: config.yml
+      tags:
+        - kubernetes
+        - installation
+
+  become: True
+  tags:
+    - kubernetes
+    - setup
+
+- name: Check for Rancher Namespace
+  become: yes
+  shell: kubectl get ns -o=jsonpath='{range .items..metadata}{.name}{"\n"}{end}' | grep cattle-system
+  register: rancher_namespace
+  failed_when: rancher_namespace.rc != 1 and rancher_namespace.rc != 0
+
+- name: Create Rancher namespace
+  when: rancher_namespace.stdout == ""
+  become: yes
+  shell: kubectl create namespace cattle-system
+  tags:
+    - kubernetes

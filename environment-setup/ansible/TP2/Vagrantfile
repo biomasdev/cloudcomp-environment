@@ -1,0 +1,26 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 8192
+    v.cpus = 5
+  end
+
+
+  config.vm.define "cloud" do |cloud|
+    cloud.vm.box = "debian/bullseye64"
+    config.vm.network "private_network", ip: "172.30.1.5"
+    config.vm.network "forwarded_port", guest: 8080, host: 8080
+    config.vm.network "forwarded_port", guest: 8081, host: 8081
+    config.vm.network "forwarded_port", guest: 31444, host: 31444
+    config.vm.network "forwarded_port", guest: 31443, host: 31443
+
+    
+    cloud.vm.provision "ansible" do |ansible|
+      ansible.playbook = "playbook-tp2.yml"
+      ansible.extra_vars = { "ansible_ssh_user": 'vagrant'}
+    end
+  end
+  
+end

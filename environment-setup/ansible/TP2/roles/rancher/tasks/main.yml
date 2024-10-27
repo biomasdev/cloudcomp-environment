@@ -1,0 +1,86 @@
+- name: Check for existing rancher installation
+  become: yes
+  stat:
+    path: "/bin/rke"
+  register: rancher_install
+  tags:
+    - rancher
+
+- name: Check if systemd exists
+  stat: path=/lib/systemd/system/
+  register: systemd_check
+
+- name: Adjust the /etc/hosts
+  become: True
+  lineinfile:
+    dest: /etc/hosts
+    line: "{{ current_machine_ipaddress }} {{ rancher_server_name }} rke.local controlplane.local podinfo.local"
+    state: present
+
+- name: Download, install and setup rancher environment
+  block:
+    - name: Start rancher installation
+      include_tasks: rancher.yml
+      when: not rancher_install.stat.exists
+      tags:
+        - rancher
+        - installation
+
+  become: True
+  tags:
+    - rancher
+    - installation
+    - setup
+
+- name: Check if rke is already running
+  become: yes
+  pids:
+    name: rke
+  register: rancher_running
+  tags:
+    - rancher
+
+- name: Running RKE
+  when: rancher_running.pids|length == 0
+  become_user: "{{ rke_admin_user }}"
+  shell: rke up --config ~/cluster.yaml
+
+- name: Configure Rancher environment
+  template:
+    src: "rancher-env.sh.j2"
+    dest: "/etc/profile.d/{{ rke_admin_user }}.sh"
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Create the config directory
+  become: yes
+  ansible.builtin.file:
+    path: /root/.kube
+    state: directory
+
+- name: Create the config directory (rke_user)
+  become: yes
+  ansible.builtin.file:
+    path: /home/{{ rke_admin_user }}/.kube
+    state: directory
+
+- name: Add Configuration to root users
+  become: yes
+  copy:
+    remote_src: yes
+    src: "/home/{{ rke_admin_user }}/kube_config_cluster.yaml"
+    dest: "/home/{{ rke_admin_user }}/.kube/config"
+    mode: 0600
+    owner: "{{ rke_admin_user }}"
+    group: rke_admin
+
+- name: Add Configuration to root user
+  become: yes
+  copy:
+    remote_src: yes
+    src: "/home/{{ rke_admin_user }}/kube_config_cluster.yaml"
+    dest: "/root/.kube/config"
+    mode: 0600
+    owner: root
+    group: root
