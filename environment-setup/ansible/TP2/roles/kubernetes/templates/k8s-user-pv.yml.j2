@@ -4,15 +4,19 @@ kind: PersistentVolume
 metadata:
   namespace: {{item.username}}
   name: {{pv_basename}}-{{item.username}}
+  finalizers:
+    - kubernetes.io/pv-protection
   labels:
     type: local
     namespace: {{item.username}}
 spec:
   capacity:
     storage: 1Gi
-  storageClassName: standard
+  storageClassName: default-storage-class
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Recycle
   hostPath:
     path: /home/{{item.username}}/{{pv_basename}}
+    type: DirectoryOrCreate
+  volumeMode: Filesystem

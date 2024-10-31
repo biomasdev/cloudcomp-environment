@@ -38,6 +38,9 @@ rules:
   - jobs
   - cronjobs
   verbs: ["*"]
+- apiGroups: [""]
+  resources: ["persistentvolumes"]
+  verbs: ["get", "list", "watch", "patch"]
 
 ---
 
@@ -54,3 +57,4 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: {{ item.username }}
+  

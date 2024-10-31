@@ -84,3 +84,25 @@
     mode: 0600
     owner: root
     group: root
+
+- name: Create the config directories (.kube)
+  become: yes
+  ansible.builtin.file:
+    path: "/home/{{item.username}}/.kube"
+    state: directory
+  with_items: "{{ admins }}"
+  loop_control:
+    label: "{{ item.username }}"
+
+- name: Add Configuration to root user
+  become: yes
+  copy:
+    remote_src: yes
+    src: "/home/{{ rke_admin_user }}/kube_config_cluster.yaml"
+    dest: "/home/{{item.username}}/.kube/config"
+    mode: 0600
+    owner: "{{ item.username }}"
+    group: "{{ item.username }}"
+  with_items: "{{ admins }}"
+  loop_control:
+    label: "{{ item.username }}"

@@ -60,8 +60,8 @@
       username: "admin"
       password: "{{ random_password }}"
       ttl: 60000
-  retries: 3
-  delay: 3
+  retries: 5
+  delay: 5
   register: token
 
 - name: Create Users in Rancher

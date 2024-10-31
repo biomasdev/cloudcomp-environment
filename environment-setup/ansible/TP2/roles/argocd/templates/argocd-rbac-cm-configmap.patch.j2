@@ -4,8 +4,10 @@ data:
 {% for student in students %}
     p, role:{{student.username}}, applications, *, {{student.username}}-project/*, allow
     p, role:{{student.username}}, projects, get, {{student.username}}-project, allow
+    p, role:{{student.username}}, certificates, *, {{student.username}}-project/*, allow
     p, role:{{student.username}}, repositories, *, *, allow
     p, role:{{student.username}}, clusters, get, *, allow
+    
     g, {{student.username}}, role:{{student.username}}
 
 {% endfor -%}
