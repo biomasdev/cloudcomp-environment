@@ -1,9 +1,0 @@
-cat admins.yml
-cd ../
-code students.yml
-cd ../
-cat students.yml
-code students.yml
-cd ../
-cd cd ../
-cd ../

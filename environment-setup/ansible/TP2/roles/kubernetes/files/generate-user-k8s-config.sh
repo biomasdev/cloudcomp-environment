@@ -1,9 +1,25 @@
 #!/bin/bash
 set -eu
+is_file_exists(){
 
+    local file="$1"
+
+    # [ (test) could have been used here
+    # Is the name given a regular file?        
+    if  [[ -f $file ]]     # quotes not required with [[ (but are with [ )
+    then
+        return 0
+    else
+        return 1
+    fi
+}
 STUDENT=$1
 CURRENT_MACHINE_IP=$2
 CLUSTER_NAME=$3
+if is_file_exists "/home/$STUDENT/.kube/config"
+then
+    exit 0
+fi
 echo "Setting up user: $STUDENT"
 
 set -o errexit
@@ -38,6 +54,6 @@ users:
      token: $token
 """ > "/home/$STUDENT/.kube/config"
 
-cp "/home/$STUDENT/.kube/config" "/home/$STUDENT/kube_config_cluster.yaml"
+cp "/home/$STUDENT/.kube/config" "/home/$STUDENT/kube_config_cluster.yml"
 sudo chown "$STUDENT:$STUDENT" -R "/home/$STUDENT/.kube"
-sudo chown "$STUDENT:$STUDENT" -R "/home/$STUDENT/kube_config_cluster.yaml"
+sudo chown "$STUDENT:$STUDENT" -R "/home/$STUDENT/kube_config_cluster.yml"

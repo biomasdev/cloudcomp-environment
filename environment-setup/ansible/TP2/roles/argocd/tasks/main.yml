@@ -11,7 +11,7 @@
   tags:
     - argocd
 
-- name: Install ArgoCD
+- name: Install ArgoCD CLI
   become: True
   when: not argo_installed
   block:
@@ -21,21 +21,28 @@
     - name: Changing ArgoCD CLI permission
       command: chmod +x /usr/local/bin/argocd
 
+- name: Install ArgoCD
+  become: true
+  when: argo_pods.stdout == ""
+  block:
     - name: Creating ArgoCD Namespace
-      when: argo_pods.stdout == ""
       command: kubectl create namespace argocd
+
+    - name: Add ArgoCD Helm Repo
+      shell: helm repo add argo https://argoproj.github.io/argo-helm
 
     - name: Installing ArgoCD
       when: argo_pods.stdout == ""
-      command: kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+      command: helm install argocd argo/argo-cd --namespace argocd --set global.domain={{ argocd_server_name }}.{{ cluster_domain }}
 
     - name: Wait for ArgoCD to be ready
       shell: |
-        kubectl get pods --namespace argocd --field-selector=status.phase!=Succeeded -o name | xargs -I {} kubectl wait --timeout=900s --namespace argocd --for=condition=Ready {}
+        kubectl get pods --namespace argocd --field-selector=status.phase!=Succeeded -o name | xargs -I {} kubectl wait --timeout=1000s --namespace argocd --for=condition=Ready {}
 
     - name: Exposing ArgoCD Port
+      become: true
       shell: |
-        kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort","ports": [{"port": 80, "protocol": "TCP", "targetPort": 8080, "nodePort": {{ ARGOCD_EXPOSED_PORT_HTTP }}}, {"port": 443, "protocol": "TCP", "targetPort": 8080, "nodePort": {{ ARGOCD_EXPOSED_PORT_HTTPS }} }]}}'
+        kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort","ports": [ {"name": "argocd", "port": 80, "protocol": "TCP", "targetPort": 8080, "nodePort": {{ ARGOCD_EXPOSED_PORT_HTTP }}}, {"port": 443, "protocol": "TCP", "targetPort": 8080, "nodePort": {{ ARGOCD_EXPOSED_PORT_HTTPS }}}]}}'
 
     - name: Get Current ArgoCD Password
       shell: |
@@ -43,7 +50,7 @@
       register: current_password
 
     - name: Set new ArgoCD Password
-      shell: "argocd login --insecure --username admin --password '{{ current_password.stdout }}' localhost:{{ ARGOCD_EXPOSED_PORT_HTTP }} && argocd account update-password --new-password='{{ random_password }}' --current-password='{{ current_password.stdout }}'"
+      shell: "argocd login --insecure --username admin --password '{{ current_password.stdout }}' localhost:31080 && argocd account update-password --new-password='{{ random_password }}' --current-password='{{ current_password.stdout }}'"
       retries: 3
       delay: 3
 
@@ -63,6 +70,11 @@
 - name: Setup Argo for Users
   become: true
   block:
+    - name: Login to Argo
+      shell: "argocd login --insecure --username admin --password '{{ random_password }}' localhost:31080"
+      retries: 3
+      delay: 5
+
     - name: Create argocd-cm ConfigMap patch file to create ArgoCD accounts
       template:
         src: templates/argocd-cm-configmap.patch.j2
@@ -72,7 +84,9 @@
       command: "kubectl -n argocd patch configmap argocd-cm --patch-file {{argocd_config_dir}}/argocd-cm-configmap.patch"
 
     - name: Set password for ArgoCD users
-      command: "argocd account update-password --account {{item.username}} --new-password {{item.pubkey | md5}} --current-password {{ random_password }}"
+      command: "argocd account update-password --account {{ item.username }} --new-password {{ item.pubkey | md5 }} --current-password {{ random_password }} --insecure "
+      retries: 3
+      delay: 3
       with_items: "{{students}}"
 
     - name: Create ArgoCD projects for each user

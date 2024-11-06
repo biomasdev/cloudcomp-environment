@@ -1,24 +1,3 @@
-- name: Ensure br_netfilter is enabled.
-  modprobe:
-    name: br_netfilter
-    state: present
-
-- name: Add the br_netfilter module to work across reboot
-  shell: |
-    echo br_netfilter > /etc/modules-load.d/br_netfilter.conf
-
-- name: Allow bridge traffic through iptables (flannel)
-  become: true
-  sysctl:
-    name: net.bridge.bridge-nf-call-iptables
-    value: 1
-    state: present
-    reload: yes
-
-- name: Disabling swapoff so k8s works correctly
-  become: true
-  shell: swapoff -a
-
 - name: Add Kubernetes GPG key
   become: true
   apt_key:

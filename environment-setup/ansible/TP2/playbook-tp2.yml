@@ -13,7 +13,7 @@
     - common
     - accounts
     - docker
-    - rancher
+    - k3s
     - kubernetes
-    - helm
+    - rancher
     - argocd

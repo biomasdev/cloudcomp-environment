@@ -1,7 +1,0 @@
-cd ../
-cd hadoop
-cd common
-cd spark
-joshuto
-cd ../../
-cd argocd
