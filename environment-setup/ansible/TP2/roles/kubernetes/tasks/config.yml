@@ -79,7 +79,7 @@
       become: true
       template:
         src: "user-profile.sh.j2"
-        dest: "/etc/profile.d/{{item.username}}.sh"
-      with_items: "{{ students }}"
-      loop_control:
-        label: "{{ item.username }}"
+        dest: "/etc/profile.d/k3s.sh"
+        owner: root
+        group: root
+        mode: 0644
