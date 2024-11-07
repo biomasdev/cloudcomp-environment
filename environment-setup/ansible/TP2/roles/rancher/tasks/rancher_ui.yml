@@ -10,4 +10,4 @@
 
     - name: Expose Rancher's Ports
       shell: |
-        kubectl patch svc rancher -n cattle-system -p '{"spec": {"type": "NodePort","ports": [{"port": 80, "protocol": "TCP", "targetPort": 80, "nodePort": {{ RANCHER_EXPOSED_PORT_HTTP }}}, {"port": 443, "protocol": "TCP", "targetPort": 443, "nodePort": {{ RANCHER_EXPOSED_PORT_HTTPS }} }]}}'
+        kubectl patch svc rancher -n cattle-system -p '{"spec": {"type": "LoadBalancer","ports": [{"port": 80, "protocol": "TCP", "targetPort": 80, "nodePort": {{ RANCHER_EXPOSED_PORT_HTTP }}}, {"port": 443, "protocol": "TCP", "targetPort": 443, "nodePort": {{ RANCHER_EXPOSED_PORT_HTTPS }} }]}}'

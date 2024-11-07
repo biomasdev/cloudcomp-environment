@@ -15,6 +15,8 @@ Vagrant.configure("2") do |config|
     config.vm.network "forwarded_port", guest: 30080, host: 30080
     config.vm.network "forwarded_port", guest: 31443, host: 31443
     config.vm.network "forwarded_port", guest: 31080, host: 31080
+    config.vm.network "forwarded_port", guest: 30242, host: 30242
+    config.vm.network "forwarded_port", guest: 30241, host: 30241
     
     cloud.vm.provision "ansible" do |ansible|
       ansible.playbook = "playbook-tp2.yml"
