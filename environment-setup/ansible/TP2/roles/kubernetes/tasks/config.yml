@@ -7,12 +7,6 @@
         state: directory
         mode: 0755
 
-    - name: Wait until kube-system is ready
-      shell: "kubectl get pods --namespace kube-system --field-selector=status.phase!=Succeeded -o name | xargs -I {} kubectl wait --timeout=900s --namespace kube-system --for=condition=Ready {}"
-
-    - name: Waiting for coredns configmap
-      shell: 'while ! kubectl get configmap coredns --namespace kube-system; do echo "Waiting for my secret. CTRL-C to exit."; sleep 1; done'
-
     - name: Generate Storage Class Configuration
       become: true
       template:

@@ -1,7 +1,10 @@
 ---
-- name: Check if argo is installed
-  set_fact:
-    argo_installed: "{{ lookup('file', '/usr/local/bin/argocd', errors='ignore') | bool }}"
+- name: Check for existing helm installation
+  stat:
+    path: "/usr/local/bin/argocd"
+  register: argocd_installed
+  tags:
+    - argocd
 
 - name: Check for existing argo pods
   become: true
@@ -13,7 +16,7 @@
 
 - name: Install ArgoCD CLI
   become: True
-  when: not argo_installed
+  when: not argocd_installed.stat.exists
   block:
     - name: Installing ArgoCD CLI
       shell: curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
@@ -30,11 +33,12 @@
   block:
     - name: Creating ArgoCD Namespace
       command: kubectl create namespace argocd
+
     - name: Installing ArgoCD
       when: argo_pods.stdout == ""
       retries: 2
       delay: 3
-      command: helm install argocd argo/argo-cd --namespace argocd --set global.domain={{ argocd_server_name }}.{{ cluster_domain }} --set server.ingress.ingressClassName="traefik" --set server.ingress.enabled=true --set server.ingress.hostname={{ argocd_server_name }}.{{ cluster_domain }}
+      command: helm install argocd argo/argo-cd --namespace argocd --set global.domain={{ argocd_server_name }}.{{ cluster_domain }} --set server.ingress.enabled=true --set server.certificate.issuer.name="pv2-selfsigned-issuer"
 
     - name: Wait for ArgoCD to be ready
       shell: |
