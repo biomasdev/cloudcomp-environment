@@ -11,6 +11,7 @@
   pip:
     name: "{{ pip_packages }}"
     state: latest
+    break_system_packages: True
 
 - name: Allow passwordless sudo
   become: true
