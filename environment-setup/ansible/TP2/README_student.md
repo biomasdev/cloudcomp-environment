@@ -291,7 +291,7 @@ metadata:
 spec:
   capacity:
     storage: 1Gi
-  storageClassName: default-storage-class
+  storageClassName: default-storage-class-<login>
   accessModes:
     - ReadWriteMany
   persistentVolumeReclaimPolicy: Recycle
@@ -310,7 +310,7 @@ spec:
 >  resources:
 >    requests:
 >      storage: 1Gi
->  storageClassName: default-storage-class
+>  storageClassName: default-storage-class-<login>
 >  accessModes:
 >    - ReadWriteMany
 >   selector:
@@ -319,7 +319,7 @@ spec:
 >   ...
 > ```
 
-Each `PersistentVolume` is already configured inside the home of each student at `/home/<login>/project2-pv2` folder, using the Kubernetes's name of `project2-pv2-<login>` and the `standard` `storageClassName`.  Each PV has a maximum of 1GB capacity and has the ability to allow many pods to write and read at same time.  Your job here is to configure your deployments to be able to read and write files inside this folder.
+Each `PersistentVolume` is already configured inside the home of each student at `/home/<login>/project2-pv2` folder, using the Kubernetes's name of `project2-pv2-<login>` and the `standard` `storageClassName` namely `default-storage-class-<login>`.  Each PV has a maximum of 1GB capacity and has the ability to allow many pods to write and read at same time.  Your job here is to configure your deployments to be able to read and write files inside this folder.
 
 The general idea is that the ML container should run whenever the dataset is updated (either manually, when triggered by the continuous delivery tool below), generate a new model and save it in the (shared) persistent volume claim. After that, the front-end container, responsible to generate the playlist recommendations, must watch the file containing the model inside the shared PVC.  The front-end container can check for update by file modification date or changes in its checksum (e.g., MD5 or SHA).  After a change is detected, the container must reload the model, performing recommendations using the most up-to-date version of the model.  You should consider using a Kubernetes [Job][kubernetes-job] to run the ML container, as it does not need to run continuously.  (Note, however, that if you create a Job, it needs to change name on each different execution of ArgoCD will get confused about the state of the job.)
 
