@@ -12,7 +12,7 @@ Currently all the configuration, package installation is done via ansible, the p
 
 After running the ansible playbook in the cluster (namely playbook-tp2.yml) all of the above will be performed. Keep an eye out for the logs that it throws as the administrator password for rancher and ansible will be printed out. If you missed that, you can also use rancher's command in the cluster vm fetch such password. It's random but it's deterministic so it shouldn't change through runs for the same host machine.
 
-After the cluster is configured, an admin must login to rancher for the first time for the login process to be enabled using the command below in the cluster.
+After the cluster is configured, an admin must login to rancher for the first time for the login process to be enabled. Such user must fetch the password using the command below in the cluster, go to the rancher dashboard login page in the port 30443 and go through the login process by using the username admin and password echoed by the command below.
 
 ## Getting the admin password for rancher and ansible
 For getting rancher and ansible password, the following command must be ran in the cluster by using one of the admin accounts. The following command should be ran and the password stored in a secure location:
