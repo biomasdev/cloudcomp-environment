@@ -4,7 +4,7 @@ STUDENT=$1
 CURRENT_MACHINE_IP=$2
 CLUSTER_NAME=$3
 
-[[ -f "/home/$STUDENT/.kube/config" ]] || exit 0
+[[ -f "/home/$STUDENT/.kube/config" ]] && exit 0
 
 echo "Setting up user: $STUDENT"
 
